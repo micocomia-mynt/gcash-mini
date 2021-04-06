@@ -1,20 +1,29 @@
 package ph.apper.account;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.ApplicationPidFileWriter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
+
 @SpringBootApplication
 public class App {
     public static void main(String[] args) {
-        SpringApplication.run(App.class, args);
+        SpringApplication springApplication = new SpringApplication(App.class);
+        springApplication.addListeners(new ApplicationPidFileWriter());
+        springApplication.run(args);
     }
 
     @Bean
@@ -29,6 +38,9 @@ public class App {
         applications that consume RESTful Web Services. Allows program
         to connect to another program through HTTP*/
         private final RestTemplate restTemplate;
+
+        @Value("${activity.url}")
+        private String activityUrl;
 
         public AccountController(RestTemplate restTemplate){
             this.restTemplate = restTemplate;
@@ -47,7 +59,7 @@ public class App {
             // We return Object.class since we're only returning a status code
             // You may use 'exchange' for other methods such as PATCH
             ResponseEntity<Object> response
-                    = restTemplate.postForEntity("http://localhost:8081/activity", activity, Object.class);
+                    = restTemplate.postForEntity(activityUrl, activity, Object.class);
 
             // Check the response of Activity
             if (response.getStatusCode().is2xxSuccessful()){
